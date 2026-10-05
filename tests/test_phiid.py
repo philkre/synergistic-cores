@@ -80,3 +80,10 @@ def test_rank_is_rerank_of_difference_1_to_n():
     S, R = S + S.T, R + R.T
     r = syn_red_rank(S, R)
     assert r.min() >= 1 and r.max() <= 6 and r.sum() == 21  # ranks 1..N (ties get averaged ranks)
+
+
+def test_discrete_kind_runs():
+    rng = np.random.default_rng(0)
+    acts = rng.standard_normal((2, 3, 60))
+    S_p, R_p = syn_red_matrices(acts, n_jobs=1, kind="discrete")
+    assert S_p.shape == (2, 3, 3) and np.isfinite(S_p).all() and np.isfinite(R_p).all()

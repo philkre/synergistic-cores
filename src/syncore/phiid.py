@@ -5,33 +5,33 @@ from phyid.calculate import calc_PhiID
 from scipy.stats import rankdata
 
 
-def pair_syn_red(x, y, tau=1, redundancy="MMI") -> tuple[float, float]:
+def pair_syn_red(x, y, tau=1, redundancy="MMI", kind="gaussian") -> tuple[float, float]:
     """Time-averaged Syn→Syn and Red→Red atoms. NaN if either series is constant or the joint
     past/future covariance is singular (e.g. one series is a lagged copy of the other)."""
     if np.std(x) < 1e-12 or np.std(y) < 1e-12:
         return np.nan, np.nan
     try:
-        atoms, _ = calc_PhiID(np.asarray(x, float), np.asarray(y, float), tau, kind="gaussian", redundancy=redundancy)
+        atoms, _ = calc_PhiID(np.asarray(x, float), np.asarray(y, float), tau, kind=kind, redundancy=redundancy)
     except np.linalg.LinAlgError:
         return np.nan, np.nan
     return float(np.mean(atoms["sts"])), float(np.mean(atoms["rtr"]))
 
 
-def prompt_matrices(acts_p, tau=1, redundancy="MMI"):
+def prompt_matrices(acts_p, tau=1, redundancy="MMI", kind="gaussian"):
     """acts_p: (N, T) → symmetric S, R of shape (N, N), zero diagonal."""
     n = acts_p.shape[0]
     S, R = np.zeros((n, n)), np.zeros((n, n))
     for i in range(n):
         for j in range(i + 1, n):
-            s, r = pair_syn_red(acts_p[i], acts_p[j], tau, redundancy)
+            s, r = pair_syn_red(acts_p[i], acts_p[j], tau, redundancy, kind)
             S[i, j] = S[j, i] = s
             R[i, j] = R[j, i] = r
     return S, R
 
 
-def syn_red_matrices(acts, tau=1, redundancy="MMI", n_jobs=8):
+def syn_red_matrices(acts, tau=1, redundancy="MMI", n_jobs=8, kind="gaussian"):
     """acts: (P, N, T) → per-prompt S_p, R_p of shape (P, N, N)."""
-    res = Parallel(n_jobs=n_jobs, verbose=5)(delayed(prompt_matrices)(a, tau, redundancy) for a in acts)
+    res = Parallel(n_jobs=n_jobs, verbose=5)(delayed(prompt_matrices)(a, tau, redundancy, kind) for a in acts)
     return np.stack([r[0] for r in res]), np.stack([r[1] for r in res])
 
 
