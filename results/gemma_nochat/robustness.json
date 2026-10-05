@@ -1,5 +1,6 @@
 {
+ "kind": "discrete",
  "natural_long_prompts": 42,
- "spearman_rank_vs_long_only": 0.5960699806744646,
- "spearman_split_half": 0.8121373937333624
+ "spearman_rank_vs_long_only": 0.40852154335278,
+ "spearman_split_half": 0.7762474115153707
 }

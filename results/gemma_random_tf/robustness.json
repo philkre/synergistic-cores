@@ -1,3 +1,4 @@
 {
- "spearman_split_half": 0.8003160707480039
+ "kind": "discrete",
+ "spearman_split_half": 0.714434399126579
 }

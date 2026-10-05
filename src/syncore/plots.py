@@ -56,12 +56,17 @@ def fig2b(rank, n_layers, path):
 def fig2c(runs: dict, path):
     """runs: name -> (rank, n_layers). Normalised mean rank per layer vs normalised depth."""
     fig, ax = plt.subplots(figsize=(6.5, 3.8))
+    ends = []
     for color, (name, (rank, n_layers)) in zip(SERIES, runs.items()):
         prof = layer_profile(rank, n_layers)
         x = np.linspace(0, 1, n_layers)
         ax.plot(x, prof, color=color, marker="o", markersize=4, label=name)
-        ax.annotate(name, (x[-1], prof[-1]), xytext=(4, 0), textcoords="offset points",
-                    color=INK, fontsize=8, va="center")
+        ends.append([prof[-1], name])
+    ends.sort()
+    for k in range(1, len(ends)):  # push end labels apart so they don't overlap
+        ends[k][0] = max(ends[k][0], ends[k - 1][0] + 0.07)
+    for y, name in ends:
+        ax.annotate(name, (1.0, y), xytext=(6, 0), textcoords="offset points", color=INK, fontsize=8, va="center")
     ax.set_xlabel("Normalised layer depth")
     ax.set_ylabel("Normalised synergy−redundancy rank")
     ax.set_ylim(-0.05, 1.05)

@@ -18,6 +18,8 @@ ap.add_argument("--run", required=True)
 ap.add_argument("--n-jobs", type=int, default=8)
 ap.add_argument("--bench", action="store_true", help="time 200 pairs and extrapolate, then exit")
 ap.add_argument("--slow", action="store_true", help="use phyid per pair instead of the vectorised equivalent")
+ap.add_argument("--kind", default="discrete", choices=["discrete", "gaussian"],
+                help="ΦID estimator; discrete (mean-binarised) is robust to heavy-tailed norms and best matches the paper")
 args = ap.parse_args()
 
 run = Path(args.run)
@@ -29,13 +31,14 @@ n_pairs = N * (N - 1) // 2
 if args.bench:
     t0 = time.time()
     for k in range(200):
-        pair_syn_red(acts[0, k % N], acts[0, (k + 1) % N])
+        pair_syn_red(acts[0, k % N], acts[0, (k + 1) % N], kind=args.kind)
     per = (time.time() - t0) / 200
     print(f"{per * 1e3:.2f} ms/pair → est. {per * n_pairs * P / args.n_jobs / 60:.1f} min on {args.n_jobs} jobs")
     raise SystemExit
 
 t0 = time.time()
-S_p, R_p = syn_red_matrices(acts, n_jobs=args.n_jobs) if args.slow else syn_red_matrices_fast(acts)
+S_p, R_p = (syn_red_matrices(acts, n_jobs=args.n_jobs, kind=args.kind) if args.slow
+            else syn_red_matrices_fast(acts, kind=args.kind))
 np.save(run / "S_p.npy", S_p)
 np.save(run / "R_p.npy", R_p)
 S, R = np.nanmean(S_p, 0), np.nanmean(R_p, 0)
@@ -45,7 +48,7 @@ prof = layer_profile(rank, meta["n_layers"])
 print(f"done in {(time.time() - t0) / 60:.1f} min; NaN pairs: {np.isnan(S_p).sum() // 2}")
 print("layer profile:", np.round(prof, 2).tolist())
 
-robust = {}
+robust = {"kind": "slow-" + args.kind if args.slow else args.kind}
 lens_f = run / "natural_len.json"
 if lens_f.exists():
     keep = np.array(json.load(open(lens_f))) >= T
