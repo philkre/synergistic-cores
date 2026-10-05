@@ -8,10 +8,10 @@ from syncore.model import head_geometry
 
 
 @torch.no_grad()
-def teacher_forced_logprobs(model, tok, prompts, gen):
+def teacher_forced_logprobs(model, tok, prompts, gen, chat=True):
     """gen: (B, T) clean generated ids. Returns float32 log-probs (B, T, V) predicting each gen token.
     position_ids are derived from the attention mask so left padding matches generate()."""
-    enc = encode(tok, prompts, model.device)
+    enc = encode(tok, prompts, model.device, chat)
     gen = gen.to(model.device)
     ids = torch.cat([enc["input_ids"], gen], 1)
     am = torch.cat([enc["attention_mask"], torch.ones_like(gen)], 1)
@@ -27,7 +27,7 @@ def _kl(lp_clean, lp_abl):
     return kl.sum().item(), kl.numel()
 
 
-def divergence_curve(model, tok, prompts, gen_tokens, orders: dict, fractions, batch_size=5) -> dict:
+def divergence_curve(model, tok, prompts, gen_tokens, orders: dict, fractions, batch_size=5, chat=True) -> dict:
     """orders: name -> list of global head indices in ablation order.
     For each order and fraction f, zero the first round(f*N) heads; returns name -> [mean KL per fraction]."""
     h = head_geometry(model)
@@ -36,12 +36,12 @@ def divergence_curve(model, tok, prompts, gen_tokens, orders: dict, fractions, b
     count = 0
     for i in range(0, len(prompts), batch_size):
         ps, g = prompts[i:i + batch_size], gen_tokens[i:i + batch_size]
-        clean = teacher_forced_logprobs(model, tok, ps, g)
+        clean = teacher_forced_logprobs(model, tok, ps, g, chat)
         n = 0
         for name, order in orders.items():
             for fi, f in enumerate(fractions):
                 with zero_heads(h, list(order)[: round(f * h.n_total)]):
-                    s, n = _kl(clean, teacher_forced_logprobs(model, tok, ps, g))
+                    s, n = _kl(clean, teacher_forced_logprobs(model, tok, ps, g, chat))
                 sums[name][fi] += s
         count += n
         print(f"  divergence batch {i // batch_size + 1}/{-(-len(prompts) // batch_size)}", flush=True)

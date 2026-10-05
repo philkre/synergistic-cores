@@ -49,3 +49,13 @@ def test_sampled_capture_seeded(tiny):
     np.testing.assert_array_equal(a["tokens"], b["tokens"])
     assert not np.array_equal(a["tokens"], c["tokens"])
     assert not np.isin(c["tokens"], eos_ids(model)).any()
+
+
+def test_raw_prompt_mode(tiny):
+    """chat=False feeds plain prompt text (no chat template) and still yields exactly n_tokens."""
+    from syncore.capture import encode
+    model, tok = tiny
+    enc = encode(tok, ["Why do people wear sunglasses?"], "cpu", chat=False)
+    assert enc["input_ids"][0].tolist() == tok("Why do people wear sunglasses?")["input_ids"]
+    out = capture(model, tok, PROMPTS, n_tokens=6, batch_size=2, chat=False)
+    assert out["acts"].shape == (3, 12, 6)

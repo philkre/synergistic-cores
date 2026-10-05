@@ -30,7 +30,8 @@ for s in range(5):
 
 model, tok = load(meta["model"])
 t0 = time.time()
-curves = divergence_curve(model, tok, meta["prompts"], tokens, orders, fractions, batch_size=args.batch_size)
+curves = divergence_curve(model, tok, meta["prompts"], tokens, orders, fractions, batch_size=args.batch_size,
+                          chat=meta.get("chat", True))
 json.dump({"fractions": fractions, "curves": curves}, open(run / "divergence.json", "w"), indent=1)
 rand = np.array([curves[f"random{s}"] for s in range(5)])
 plots.fig4a(np.array(fractions), np.array(curves["synergistic"]), rand, Path("results/figures/fig4a_gemma.png"))
