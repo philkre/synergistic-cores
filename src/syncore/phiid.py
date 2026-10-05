@@ -6,10 +6,14 @@ from scipy.stats import rankdata
 
 
 def pair_syn_red(x, y, tau=1, redundancy="MMI") -> tuple[float, float]:
-    """Time-averaged Syn→Syn and Red→Red atoms. NaN if either series is constant."""
+    """Time-averaged Syn→Syn and Red→Red atoms. NaN if either series is constant or the joint
+    past/future covariance is singular (e.g. one series is a lagged copy of the other)."""
     if np.std(x) < 1e-12 or np.std(y) < 1e-12:
         return np.nan, np.nan
-    atoms, _ = calc_PhiID(np.asarray(x, float), np.asarray(y, float), tau, kind="gaussian", redundancy=redundancy)
+    try:
+        atoms, _ = calc_PhiID(np.asarray(x, float), np.asarray(y, float), tau, kind="gaussian", redundancy=redundancy)
+    except np.linalg.LinAlgError:
+        return np.nan, np.nan
     return float(np.mean(atoms["sts"])), float(np.mean(atoms["rtr"]))
 
 

@@ -66,3 +66,9 @@ def test_rank_orders_synergistic_first():
 def test_layer_profile_minmax():
     rank = np.array([0, 0, 5, 5, 1, 1], float)  # 3 layers x 2 heads
     np.testing.assert_allclose(layer_profile(rank, n_layers=3), [0, 1, 0.2])
+
+
+def test_singular_covariance_gives_nan():
+    x = np.random.default_rng(0).standard_normal(50)
+    syn, red = pair_syn_red(x, np.roll(x, -1))  # y_past == x_future -> singular joint covariance
+    assert np.isnan(syn) and np.isnan(red)
