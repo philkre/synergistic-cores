@@ -11,11 +11,13 @@ import numpy as np
 from scipy.stats import spearmanr
 
 from syncore.phiid import layer_profile, pair_syn_red, syn_red_matrices, syn_red_rank
+from syncore.phiid_fast import syn_red_matrices_fast
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--run", required=True)
 ap.add_argument("--n-jobs", type=int, default=8)
 ap.add_argument("--bench", action="store_true", help="time 200 pairs and extrapolate, then exit")
+ap.add_argument("--slow", action="store_true", help="use phyid per pair instead of the vectorised equivalent")
 args = ap.parse_args()
 
 run = Path(args.run)
@@ -33,7 +35,7 @@ if args.bench:
     raise SystemExit
 
 t0 = time.time()
-S_p, R_p = syn_red_matrices(acts, n_jobs=args.n_jobs)
+S_p, R_p = syn_red_matrices(acts, n_jobs=args.n_jobs) if args.slow else syn_red_matrices_fast(acts)
 np.save(run / "S_p.npy", S_p)
 np.save(run / "R_p.npy", R_p)
 S, R = np.nanmean(S_p, 0), np.nanmean(R_p, 0)
