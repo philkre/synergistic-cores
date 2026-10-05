@@ -53,6 +53,30 @@ def fig2b(rank, n_layers, path):
     _save(fig, path)
 
 
+def fig2ab(S, R, rank, n_layers, title, path):
+    """Left third: synergy (red) above redundancy (blue) head-pair matrices. Right two thirds: heads × layers rank map."""
+    fig = plt.figure(figsize=(14, 6.4))
+    gs = fig.add_gridspec(2, 2, width_ratios=[1, 2], wspace=0.18, hspace=0.32)
+    for row, (M, name, cmap) in enumerate([(S, "Synergy (Syn→Syn)", SEQ_RED), (R, "Redundancy (Red→Red)", SEQ)]):
+        ax = fig.add_subplot(gs[row, 0])
+        im = ax.imshow(M, cmap=cmap, interpolation="nearest")
+        ax.set_title(name, fontsize=10)
+        ax.set_ylabel("Source head")
+        if row == 1:
+            ax.set_xlabel("Target head")
+        fig.colorbar(im, ax=ax, shrink=0.85)
+    ax = fig.add_subplot(gs[:, 1])
+    grid = np.asarray(rank, float).reshape(n_layers, -1).T
+    im = ax.imshow(grid, cmap=DIV, aspect="auto", interpolation="nearest")
+    ax.set_title("Synergy−redundancy rank per head", fontsize=10)
+    ax.set_xlabel("Transformer layer")
+    ax.set_ylabel("Attention head")
+    fig.colorbar(im, ax=ax, label="Rank (red = synergistic, blue = redundant)", shrink=0.9)
+    fig.suptitle(title, fontsize=12)
+    fig.savefig(path, dpi=300, bbox_inches="tight")
+    plt.close(fig)
+
+
 def fig2c(runs: dict, path):
     """runs: name -> (rank, n_layers). Normalised mean rank per layer vs normalised depth."""
     fig, ax = plt.subplots(figsize=(6.5, 3.8))

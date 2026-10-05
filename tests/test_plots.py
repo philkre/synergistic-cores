@@ -19,3 +19,10 @@ def test_step2_figures_write_files(tmp_path):
     plots.fig4b({"Baseline": [0.5], "Redundant core": [0.45], "Random": [0.4, 0.42], "Synergistic core": [0.3]},
                 tmp_path / "e.png")
     assert (tmp_path / "d.png").stat().st_size > 1000 and (tmp_path / "e.png").stat().st_size > 1000
+
+
+def test_fig2ab_combined_writes_file(tmp_path):
+    rng = np.random.default_rng(0)
+    S, R = rng.random((6, 6)), rng.random((6, 6))
+    plots.fig2ab(S, R, rng.permutation(6).astype(float), n_layers=3, title="toy", path=tmp_path / "ab.png")
+    assert (tmp_path / "ab.png").stat().st_size > 1000
