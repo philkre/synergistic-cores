@@ -7,7 +7,7 @@ Intelligence has evolved independently in biological and artificial systems. The
 ```
 60 prompts (6 cognitive categories)
    → 100-token generation, recording ‖softmax(qKᵀ/√d)·V‖₂ for every head at every token
-   → ΦID for every pair of heads (Gaussian, MMI): Syn→Syn = synergy, Red→Red = redundancy
+   → ΦID for every pair of heads (discrete, MMI): Syn→Syn = synergy, Red→Red = redundancy
    → per head: rank(synergy) − rank(redundancy), re-ranked to 1…N
    → mean rank per layer → "synergistic core" profile
 ```
@@ -30,7 +30,7 @@ Runs locally on an M1 Pro (16 GB, bf16 on MPS). Code in `src/syncore/`, 35 tests
 
 ```bash
 PYTHONPATH=src uv run python scripts/01_capture.py --model google/gemma-3-4b-it --out results/gemma [--no-chat]
-PYTHONPATH=src uv run python scripts/02_phiid.py   --run results/gemma      # vectorised ΦID, seconds
+PYTHONPATH=src uv run python scripts/02_phiid.py   --run results/gemma      # vectorised discrete ΦID, seconds
 PYTHONPATH=src uv run python scripts/03_plots_step1.py
 ```
 
