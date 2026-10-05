@@ -1,0 +1,4 @@
+gaussian path still exact on Gemma
+gemma         discrete (11s): midMinusEnds=+0.23 CI[+0.19,+0.30]  corr(syn,red)=+0.81  split-half=0.66  rank vs gaussian=+0.83  ends=(0.20,0.33)  r_paper=+0.59 smooth=+0.87
+gemma_nochat  discrete (12s): midMinusEnds=+0.28 CI[+0.19,+0.35]  corr(syn,red)=+0.71  split-half=0.78  rank vs gaussian=+0.78  ends=(0.00,0.38)  r_paper=+0.65 smooth=+0.84
+qwen3base     discrete (221s): midMinusEnds=+0.23 CI[+0.15,+0.28]  corr(syn,red)=+0.85  split-half=0.77  rank vs gaussian=+0.75  ends=(0.90,0.35)

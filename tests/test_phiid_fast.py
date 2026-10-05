@@ -41,3 +41,12 @@ def test_nan_for_constant_and_singular_pairs():
     assert np.isnan(S[0, 0, 1]) and np.isnan(R[0, 0, 1])  # lagged copy -> singular
     assert np.isnan(S[0, 2, 3]) and np.isnan(S[0, 3, 2])  # constant series
     assert np.isfinite(S[0, 0, 3]) and (np.diag(S[0]) == 0).all()
+
+
+def test_discrete_matches_phyid():
+    rng = np.random.default_rng(3)
+    acts = np.stack([_coupled(rng, 6, 80) for _ in range(2)])
+    S_ref, R_ref = syn_red_matrices(acts, n_jobs=1, kind="discrete")
+    S, R = syn_red_matrices_fast(acts, kind="discrete")
+    np.testing.assert_allclose(S, S_ref, rtol=1e-6, atol=1e-9)
+    np.testing.assert_allclose(R, R_ref, rtol=1e-6, atol=1e-9)
