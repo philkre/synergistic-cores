@@ -14,8 +14,7 @@ plots.fig2a(np.nanmean(np.load(g / "S_p.npy"), 0), np.nanmean(np.load(g / "R_p.n
 plots.fig2b(np.load(g / "rank.npy"), meta["n_layers"], out / "fig2b_gemma.png")
 
 runs = {}
-for name, d in [("Gemma-3-4B-it", "gemma"), ("Gemma random init", "gemma_random"),
-                ("Gemma random init, trained tokens", "gemma_random_tf"), ("Qwen2.5-Math-1.5B", "qwen")]:
+for name, d in [("Gemma-3-4B-it", "gemma"), ("Qwen2.5-Math-1.5B", "qwen")]:
     p = Path("results") / d
     if (p / "rank.npy").exists():
         runs[name] = (np.load(p / "rank.npy"), json.load(open(p / "meta.json"))["n_layers"])
