@@ -48,3 +48,30 @@ def natural_lengths(model, tok, prompts, n_tokens=100, batch_size=10) -> list[in
         for row in gen.tolist():
             lens.append(next((j for j, t in enumerate(row) if t in eos), len(row)) or 1)
     return lens
+
+
+@torch.no_grad()
+def capture_teacher_forced(model, tok, prompts, gen_tokens, batch_size=10) -> np.ndarray:
+    """Feed given token sequences (P, T) step by step with KV cache, mirroring generate()'s T forward
+    passes (prefill, then tokens 0..T-2). Returns acts (P, N, T). Used to drive a random-init model
+    with a trained model's outputs, so both see identical inputs."""
+    h = head_geometry(model)
+    gen_tokens = torch.as_tensor(np.asarray(gen_tokens))
+    T = gen_tokens.shape[1]
+    acts = []
+    for i in range(0, len(prompts), batch_size):
+        enc = encode(tok, prompts[i:i + batch_size], model.device)
+        gen = gen_tokens[i:i + batch_size].to(model.device)
+        am = enc["attention_mask"]
+        with HeadNormRecorder(model, h) as rec:
+            out = model(input_ids=enc["input_ids"], attention_mask=am,
+                        position_ids=(am.cumsum(-1) - 1).clamp(min=0), use_cache=True)
+            for t in range(T - 1):
+                am = torch.cat([am, torch.ones_like(am[:, :1])], 1)
+                out = model(input_ids=gen[:, t:t + 1], attention_mask=am, position_ids=am.sum(-1, keepdim=True) - 1,
+                            past_key_values=out.past_key_values, use_cache=True)
+        r = rec.result()
+        assert r.shape[-1] == T, f"{r.shape[-1]} forward passes for {T} tokens"
+        acts.append(r)
+        print(f"  teacher-forced {min(i + batch_size, len(prompts))}/{len(prompts)}", flush=True)
+    return torch.cat(acts).numpy()

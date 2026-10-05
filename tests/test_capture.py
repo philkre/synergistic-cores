@@ -29,3 +29,13 @@ def test_batched_equals_single(tiny):
     single = capture(model, tok, [short], n_tokens=6, batch_size=1)
     np.testing.assert_array_equal(batched["tokens"][0], single["tokens"][0])
     np.testing.assert_allclose(batched["acts"][0], single["acts"][0], rtol=1e-4, atol=1e-4)
+
+
+def test_teacher_forced_reproduces_free_generation(tiny):
+    """Feeding a model its own greedy tokens step by step must give identical head norms."""
+    from syncore.capture import capture_teacher_forced
+    model, tok = tiny
+    free = capture(model, tok, PROMPTS, n_tokens=6, batch_size=2)
+    forced = capture_teacher_forced(model, tok, PROMPTS, free["tokens"], batch_size=2)
+    assert forced.shape == free["acts"].shape
+    np.testing.assert_allclose(forced, free["acts"], rtol=1e-4, atol=1e-4)

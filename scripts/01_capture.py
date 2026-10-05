@@ -1,6 +1,7 @@
 """Generate 100 tokens per prompt and save per-head activation time series.
 
 Usage: uv run python scripts/01_capture.py --model google/gemma-3-4b-it --out results/gemma [--random-init]
+       [--teacher-from results/gemma]  # feed another run's generated tokens instead of generating
 """
 import argparse
 import json
@@ -9,7 +10,7 @@ from pathlib import Path
 
 import numpy as np
 
-from syncore.capture import capture, natural_lengths
+from syncore.capture import capture, capture_teacher_forced, natural_lengths
 from syncore.model import head_geometry, load
 from syncore.prompts import all_prompts
 
@@ -18,6 +19,7 @@ ap.add_argument("--model", required=True)
 ap.add_argument("--out", required=True)
 ap.add_argument("--random-init", action="store_true")
 ap.add_argument("--n-tokens", type=int, default=100)
+ap.add_argument("--teacher-from", help="run dir whose tokens.npy to teacher-force")
 args = ap.parse_args()
 
 out = Path(args.out)
@@ -27,14 +29,18 @@ h = head_geometry(model)
 cats, prompts = zip(*all_prompts())
 
 t0 = time.time()
-res = capture(model, tok, list(prompts), n_tokens=args.n_tokens)
+if args.teacher_from:
+    tokens = np.load(Path(args.teacher_from) / "tokens.npy")
+    res = {"acts": capture_teacher_forced(model, tok, list(prompts), tokens), "tokens": tokens}
+else:
+    res = capture(model, tok, list(prompts), n_tokens=args.n_tokens)
 np.save(out / "acts.npy", res["acts"])
 np.save(out / "tokens.npy", res["tokens"])
-if not args.random_init:
+if not args.random_init and not args.teacher_from:
     lens = natural_lengths(model, tok, list(prompts), n_tokens=args.n_tokens)
     json.dump(lens, open(out / "natural_len.json", "w"))
     print(f"natural length < {args.n_tokens}: {sum(n < args.n_tokens for n in lens)}/{len(lens)}")
-json.dump({"model": args.model, "random_init": args.random_init,
+json.dump({"model": args.model, "random_init": args.random_init, "teacher_from": args.teacher_from,
            "n_layers": h.n_layers, "n_heads": h.n_heads, "head_dim": h.head_dim,
            "categories": list(cats), "prompts": list(prompts)}, open(out / "meta.json", "w"), indent=1)
 
