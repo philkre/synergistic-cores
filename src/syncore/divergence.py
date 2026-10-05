@@ -4,6 +4,7 @@ import torch
 
 from syncore.ablate import zero_heads
 from syncore.capture import encode
+from syncore.model import head_geometry
 
 
 @torch.no_grad()
@@ -29,7 +30,6 @@ def _kl(lp_clean, lp_abl):
 def divergence_curve(model, tok, prompts, gen_tokens, orders: dict, fractions, batch_size=5) -> dict:
     """orders: name -> list of global head indices in ablation order.
     For each order and fraction f, zero the first round(f*N) heads; returns name -> [mean KL per fraction]."""
-    from syncore.model import head_geometry
     h = head_geometry(model)
     gen_tokens = torch.as_tensor(np.asarray(gen_tokens))
     sums = {k: np.zeros(len(fractions)) for k in orders}
