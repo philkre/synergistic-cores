@@ -72,3 +72,11 @@ def test_singular_covariance_gives_nan():
     x = np.random.default_rng(0).standard_normal(50)
     syn, red = pair_syn_red(x, np.roll(x, -1))  # y_past == x_future -> singular joint covariance
     assert np.isnan(syn) and np.isnan(red)
+
+
+def test_rank_is_rerank_of_difference_1_to_n():
+    rng = np.random.default_rng(0)
+    S, R = rng.random((6, 6)), rng.random((6, 6))
+    S, R = S + S.T, R + R.T
+    r = syn_red_rank(S, R)
+    assert r.min() >= 1 and r.max() <= 6 and r.sum() == 21  # ranks 1..N (ties get averaged ranks)

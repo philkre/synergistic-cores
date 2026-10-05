@@ -36,12 +36,14 @@ def syn_red_matrices(acts, tau=1, redundancy="MMI", n_jobs=8):
 
 
 def syn_red_rank(S, R):
-    """S, R: (N, N) prompt-averaged. Per head: mean over its pairs; rank(syn) − rank(red). Higher = more synergistic."""
+    """S, R: (N, N) prompt-averaged. Per head: mean over its pairs; rank(rank(syn) − rank(red)) in 1..N.
+    Higher = more synergistic. The outer re-rank matches the paper's Fig 2b scale (1..N, no negatives)
+    and stops a few extreme heads dominating layer means; head order is unchanged."""
     n = S.shape[0]
     off = ~np.eye(n, dtype=bool)
     syn = np.array([np.nanmean(S[i, off[i]]) for i in range(n)])
     red = np.array([np.nanmean(R[i, off[i]]) for i in range(n)])
-    return rankdata(syn) - rankdata(red)
+    return rankdata(rankdata(syn) - rankdata(red))
 
 
 def layer_profile(rank, n_layers):
