@@ -28,6 +28,7 @@ class HeadNormRecorder:
         self._cur.append(x.view(x.shape[0], self.h.n_heads, self.h.head_dim).float().norm(dim=-1).cpu())
 
     def _end(self, module, args, output):
+        assert len(self._cur) == self.h.n_layers, f"captured {len(self._cur)} layers, expected {self.h.n_layers}"
         self.steps.append(torch.cat(self._cur, dim=1))  # (B, L*H), layer-major
 
     def result(self) -> torch.Tensor:

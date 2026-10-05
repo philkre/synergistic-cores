@@ -19,3 +19,13 @@ def test_natural_lengths_in_range(tiny):
     model, tok = tiny
     lens = natural_lengths(model, tok, PROMPTS, n_tokens=12, batch_size=2)
     assert len(lens) == 3 and all(1 <= n <= 12 for n in lens)
+
+
+def test_batched_equals_single(tiny):
+    """Left padding must not change a prompt's activations (mask/position_ids correctness)."""
+    model, tok = tiny
+    short, long = "Hi", "Describe a world where water is scarce, and every drop counts."
+    batched = capture(model, tok, [short, long], n_tokens=6, batch_size=2)
+    single = capture(model, tok, [short], n_tokens=6, batch_size=1)
+    np.testing.assert_array_equal(batched["tokens"][0], single["tokens"][0])
+    np.testing.assert_allclose(batched["acts"][0], single["acts"][0], rtol=1e-4, atol=1e-4)

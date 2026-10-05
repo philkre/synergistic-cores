@@ -31,7 +31,9 @@ def capture(model, tok, prompts, n_tokens=100, batch_size=10) -> dict:
     for i in range(0, len(prompts), batch_size):
         with HeadNormRecorder(model, h) as rec:
             _, gen = generate(model, tok, prompts[i:i + batch_size], n_tokens, ban_eos=True)
-        acts.append(rec.result()[..., :n_tokens])
+        r = rec.result()
+        assert r.shape[-1] == n_tokens, f"{r.shape[-1]} forward passes for {n_tokens} tokens"
+        acts.append(r)
         toks.append(gen.cpu())
         print(f"  captured {min(i + batch_size, len(prompts))}/{len(prompts)}", flush=True)
     return {"acts": torch.cat(acts).numpy(), "tokens": torch.cat(toks).numpy()}

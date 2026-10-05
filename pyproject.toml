@@ -35,3 +35,4 @@ allow-direct-references = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["src"]  # macOS may flag .venv .pth files hidden, which Python 3.13 skips
