@@ -13,6 +13,7 @@ from syncore.phiid import layer_profile  # noqa: E402
 SERIES = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100"]
 INK, MUTED, SURFACE = "#0b0b0b", "#898781", "#fcfcfb"
 SEQ = LinearSegmentedColormap.from_list("seq_blue", ["#cde2fb", "#6da7ec", "#256abf", "#0d366b"])
+SEQ_RED = LinearSegmentedColormap.from_list("seq_red", ["#fbdcdb", "#ef8f8e", "#e34948", "#8c1d1d"])
 DIV = LinearSegmentedColormap.from_list("div", ["#2a78d6", "#f0efec", "#e34948"])
 
 plt.rcParams.update({
@@ -30,10 +31,10 @@ def _save(fig, path):
 
 
 def fig2a(S, R, path):
-    """Synergy and redundancy matrices between head pairs."""
+    """Synergy (red) and redundancy (blue) matrices between head pairs, as in the paper."""
     fig, axes = plt.subplots(1, 2, figsize=(9, 4))
-    for ax, M, title in zip(axes, [S, R], ["Synergy (Syn→Syn)", "Redundancy (Red→Red)"]):
-        im = ax.imshow(M, cmap=SEQ, interpolation="nearest")
+    for ax, M, title, cmap in zip(axes, [S, R], ["Synergy (Syn→Syn)", "Redundancy (Red→Red)"], [SEQ_RED, SEQ]):
+        im = ax.imshow(M, cmap=cmap, interpolation="nearest")
         ax.set_title(title)
         ax.set_xlabel("Target head")
         ax.set_ylabel("Source head")
