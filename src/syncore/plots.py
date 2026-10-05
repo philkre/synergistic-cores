@@ -65,7 +65,7 @@ def fig2c(runs: dict, path):
     ax.set_xlabel("Normalised layer depth")
     ax.set_ylabel("Normalised synergy−redundancy rank")
     ax.set_ylim(-0.05, 1.05)
-    ax.legend(frameon=False, fontsize=8)
+    ax.legend(frameon=False, fontsize=8, loc="lower left", bbox_to_anchor=(0, 1.02), ncol=2)
     _save(fig, path)
 
 
