@@ -20,6 +20,8 @@ ap.add_argument("--out", required=True)
 ap.add_argument("--random-init", action="store_true")
 ap.add_argument("--n-tokens", type=int, default=100)
 ap.add_argument("--teacher-from", help="run dir whose tokens.npy to teacher-force")
+ap.add_argument("--sample", action="store_true", help="stochastic decoding with the checkpoint's settings")
+ap.add_argument("--seed", type=int, default=0)
 args = ap.parse_args()
 
 out = Path(args.out)
@@ -33,14 +35,14 @@ if args.teacher_from:
     tokens = np.load(Path(args.teacher_from) / "tokens.npy")
     res = {"acts": capture_teacher_forced(model, tok, list(prompts), tokens), "tokens": tokens}
 else:
-    res = capture(model, tok, list(prompts), n_tokens=args.n_tokens)
+    res = capture(model, tok, list(prompts), n_tokens=args.n_tokens, sample=args.sample, seed=args.seed)
 np.save(out / "acts.npy", res["acts"])
 np.save(out / "tokens.npy", res["tokens"])
-if not args.random_init and not args.teacher_from:
+if not args.random_init and not args.teacher_from and not args.sample:
     lens = natural_lengths(model, tok, list(prompts), n_tokens=args.n_tokens)
     json.dump(lens, open(out / "natural_len.json", "w"))
     print(f"natural length < {args.n_tokens}: {sum(n < args.n_tokens for n in lens)}/{len(lens)}")
-json.dump({"model": args.model, "random_init": args.random_init, "teacher_from": args.teacher_from,
+json.dump({"model": args.model, "random_init": args.random_init, "teacher_from": args.teacher_from, "sample": args.sample, "seed": args.seed,
            "n_layers": h.n_layers, "n_heads": h.n_heads, "head_dim": h.head_dim,
            "categories": list(cats), "prompts": list(prompts)}, open(out / "meta.json", "w"), indent=1)
 

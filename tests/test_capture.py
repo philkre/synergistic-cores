@@ -39,3 +39,13 @@ def test_teacher_forced_reproduces_free_generation(tiny):
     forced = capture_teacher_forced(model, tok, PROMPTS, free["tokens"], batch_size=2)
     assert forced.shape == free["acts"].shape
     np.testing.assert_allclose(forced, free["acts"], rtol=1e-4, atol=1e-4)
+
+
+def test_sampled_capture_seeded(tiny):
+    model, tok = tiny
+    a = capture(model, tok, PROMPTS, n_tokens=8, batch_size=3, sample=True, seed=0)
+    b = capture(model, tok, PROMPTS, n_tokens=8, batch_size=3, sample=True, seed=0)
+    c = capture(model, tok, PROMPTS, n_tokens=8, batch_size=3, sample=True, seed=1)
+    np.testing.assert_array_equal(a["tokens"], b["tokens"])
+    assert not np.array_equal(a["tokens"], c["tokens"])
+    assert not np.isin(c["tokens"], eos_ids(model)).any()

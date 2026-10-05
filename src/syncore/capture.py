@@ -13,24 +13,27 @@ def encode(tok, prompts, device):
 
 
 @torch.no_grad()
-def generate(model, tok, prompts, n_tokens, ban_eos=True):
-    """Returns (encoding, generated ids (B, <=n_tokens)). ban_eos forces exactly n_tokens without EOS."""
+def generate(model, tok, prompts, n_tokens, ban_eos=True, sample=False):
+    """Returns (encoding, generated ids (B, <=n_tokens)). ban_eos forces exactly n_tokens without EOS.
+    sample=True uses the checkpoint's generation_config sampling settings (e.g. Gemma: top_k=64, top_p=0.95)."""
     enc = encode(tok, prompts, model.device)
-    kw = dict(max_new_tokens=n_tokens, do_sample=False)
+    kw = dict(max_new_tokens=n_tokens, do_sample=sample)
     if ban_eos:
         kw.update(min_new_tokens=n_tokens, suppress_tokens=eos_ids(model))
     out = model.generate(**enc, **kw)
     return enc, out[:, enc["input_ids"].shape[1]:]
 
 
-def capture(model, tok, prompts, n_tokens=100, batch_size=10) -> dict:
+def capture(model, tok, prompts, n_tokens=100, batch_size=10, sample=False, seed=0) -> dict:
     """acts: (P, N, T) float32 head norms; tokens: (P, T) generated ids.
-    Timestep 0 is the prefill pass's last position (it produces generated token 0)."""
+    Timestep 0 is the prefill pass's last position (it produces generated token 0).
+    sample=True: stochastic decoding, reproducible via seed."""
     h = head_geometry(model)
+    torch.manual_seed(seed)
     acts, toks = [], []
     for i in range(0, len(prompts), batch_size):
         with HeadNormRecorder(model, h) as rec:
-            _, gen = generate(model, tok, prompts[i:i + batch_size], n_tokens, ban_eos=True)
+            _, gen = generate(model, tok, prompts[i:i + batch_size], n_tokens, ban_eos=True, sample=sample)
         r = rec.result()
         assert r.shape[-1] == n_tokens, f"{r.shape[-1]} forward passes for {n_tokens} tokens"
         acts.append(r)
