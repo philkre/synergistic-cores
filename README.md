@@ -51,3 +51,42 @@ PYTHONPATH=src uv run python scripts/03_plots_step1.py
 
 `PYTHONPATH=src` is needed because macOS hides the venv's `.pth` files and Python 3.13 skips hidden ones.
 Spec and plan: `docs/superpowers/`. Exploration notes: `exploration/README.md`.
+
+## Citation
+
+This repo reproduces the paper below. ΦID is computed with [`phyid`](https://github.com/Imperial-MIND-lab/integrated-info-decomp), whose authors ask that the second and third works be cited.
+
+```bibtex
+@article{urbina2026synergistic,
+  title   = {A Brain-like Synergistic Core in LLMs Drives Behaviour and Learning},
+  author  = {Urbina-Rodriguez, Pedro and Fountas, Zafeirios and Rosas, Fernando E. and Wang, Jun and
+             Luppi, Andrea I. and Bou-Ammar, Haitham and Shanahan, Murray and Mediano, Pedro A. M.},
+  journal = {arXiv preprint arXiv:2601.06851},
+  year    = {2026}
+}
+
+@article{mediano2025phiid,
+  title   = {Toward a unified taxonomy of information dynamics via Integrated Information Decomposition},
+  author  = {Mediano, Pedro A. M. and Rosas, Fernando E. and Luppi, Andrea I. and Carhart-Harris, Robin L. and
+             Bor, Daniel and Seth, Anil K. and Barrett, Adam B.},
+  journal = {Proceedings of the National Academy of Sciences},
+  volume  = {122},
+  number  = {39},
+  pages   = {e2423297122},
+  year    = {2025}
+}
+
+@article{luppi2022synergistic,
+  title   = {A synergistic core for human brain evolution and cognition},
+  author  = {Luppi, Andrea I. and Mediano, Pedro A. M. and Rosas, Fernando E. and Holland, Negin and
+             Fryer, Tim D. and O'Brien, John T. and Rowe, James B. and Menon, David K. and Bor, Daniel and
+             Stamatakis, Emmanuel A.},
+  journal = {Nature Neuroscience},
+  volume  = {25},
+  number  = {6},
+  pages   = {771--782},
+  year    = {2022}
+}
+```
+
+Models: [`google/gemma-3-4b-it`](https://huggingface.co/google/gemma-3-4b-it), [`Qwen/Qwen3-4B-Base`](https://huggingface.co/Qwen/Qwen3-4B-Base).
