@@ -16,9 +16,9 @@ Runs locally on an M1 Pro (16 GB, bf16 on MPS). Code in `src/syncore/`, 35 tests
 
 ## Results so far
 
-| Synergy vs redundancy between heads (Gemma-3-4B-it) | Synergy–redundancy rank per head     |
-| --------------------------------------------------- | ------------------------------------ |
-| ![](results/figures/fig2a_gemma.png)                | ![](results/figures/fig2b_gemma.png) |
+![Gemma-3-4B-it, chat](results/figures/fig2ab_gemma.png)
+![Gemma-3-4B-it, plain prompt](results/figures/fig2ab_gemma_nochat.png)
+![Qwen3-4B-Base, plain prompt](results/figures/fig2ab_qwen3base.png)
 
 ![Layer profiles](results/figures/fig2c_profiles.png)
 

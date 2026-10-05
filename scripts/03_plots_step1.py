@@ -1,4 +1,4 @@
-"""Fig 2a/2b for Gemma and Fig 2c overlay of all runs. Writes to results/figures/."""
+"""Fig 2c layer-profile overlay and per-model combined Fig 2a/2b. Writes to results/figures/."""
 import json
 from pathlib import Path
 
@@ -8,10 +8,6 @@ from syncore import plots
 
 out = Path("results/figures")
 out.mkdir(parents=True, exist_ok=True)
-g = Path("results/gemma")
-meta = json.load(open(g / "meta.json"))
-plots.fig2a(np.nanmean(np.load(g / "S_p.npy"), 0), np.nanmean(np.load(g / "R_p.npy"), 0), out / "fig2a_gemma.png")
-plots.fig2b(np.load(g / "rank.npy"), meta["n_layers"], out / "fig2b_gemma.png")
 
 runs = {}
 for name, d in [("Gemma-3-4B-it (chat)", "gemma"), ("Gemma-3-4B-it (plain prompt)", "gemma_nochat"),
