@@ -4,7 +4,21 @@ version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
     "accelerate>=1.15.0",
+    "datasets>=5.0.1",
+    "joblib>=1.6.0",
+    "matplotlib>=3.11.2",
+    "numpy>=2.5.3",
+    "phyid",
     "psutil>=7.2.2",
+    "scipy>=1.18.1",
     "torch>=2.14.1",
     "transformers>=5.18.0",
+]
+
+[tool.uv.sources]
+phyid = { git = "https://github.com/Imperial-MIND-lab/integrated-info-decomp" }
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
 ]

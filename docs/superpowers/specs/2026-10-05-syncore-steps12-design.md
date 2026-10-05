@@ -32,7 +32,7 @@ Out of scope: GRPO/SFT (Fig 5), Pythia training dynamics (Fig 3a), graph metrics
 | Capture point | `register_forward_pre_hook` on every `self_attn.o_proj`, last position only; per-forward-pass flush via model-level pre/post hooks (not by patching `model.forward` — breaks `generate()` kwarg validation) | Smoke test |
 | Timesteps | 100 generated tokens; include the prefill pass's last position (it produces token 1) → exactly 100 samples | Paper |
 | Decoding | Greedy, chat template, batch by category (10 prompts), left padding | Speed |
-| Early EOS | **Ban EOS** (`suppress_tokens` / `bad_words_ids` for all EOS ids) so every prompt yields 100 real tokens. Robustness check: forced `min_new_tokens=100` without banning. | 13/60 prompts end before 100 tokens naturally (syntax, numerical) |
+| Early EOS | **Ban EOS** (`suppress_tokens=[1, 106]` + `min_new_tokens=100`) so every prompt yields exactly 100 tokens. Verified: for short-answer prompts Gemma then pads with `"\n \n"` (not real text) — accepted, likely matches paper. (Plain forced length via `min_new_tokens` is identical: HF implements it by suppressing EOS.) **Robustness checks:** split-half Spearman ρ of the ranking (even vs odd prompts), and record natural (EOS-allowed) lengths; recompute ranking on the prompts with natural length ≥ 100 only; report Spearman ρ vs full ranking. | 13/60 prompts end before 100 tokens naturally (syntax, numerical) |
 | Prompts | 60 prompts, 6 categories × 10, verbatim from Appendix A | Paper |
 | ΦID | `phyid.calculate.calc_PhiID(src, trg, tau=1, kind="gaussian", redundancy="MMI")`, from `git+https://github.com/Imperial-MIND-lab/integrated-info-decomp` | Paper cites this implementation |
 | Redundancy function | MMI (default). Paper text says I_min, but Luppi et al. and phyid use MMI for Gaussian data. CCS available as a flag. | Ambiguity in paper |
@@ -81,7 +81,7 @@ Each script reads from and writes to `results/<model>/`; steps are cached and ca
 - Conditions: baseline; top-25% synergistic heads; top-25% redundant heads (bottom of rank); 3 random 25% subsets.
 - Perturbation: add Gaussian noise `σ = α·std(W)` to the head's rows of `q_proj` and columns of `o_proj` (fixed seed). Weights restored after each condition.
 - Calibrate α ∈ {0.5, 1, 2} on 50 problems; pick the smallest α where the random condition drops visibly below baseline.
-- Eval set: 150 MATH test problems stratified across levels 1–5 (fixed seed), greedy, max 512 new tokens, batched; score by `\boxed{}` extraction + normalised string match.
+- Eval set: 150 problems from `HuggingFaceH4/MATH-500` (30 per level 1–5, fixed seed), greedy, max 512 new tokens, batched; prompt suffix "Please reason step by step, and put your final answer within \boxed{}."; score by last-`\boxed{}` extraction + normalised string match.
 - Paper reference values (Gemma-3-4B-IT): baseline ≈ 58%, synergistic ≈ 28%, random ≈ 44%, redundant ≈ 52%.
 
 ## Success criteria (go / no-go for GRPO)
