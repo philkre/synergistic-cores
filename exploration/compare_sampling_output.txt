@@ -1,0 +1,10 @@
+paper (eyeballed)      roughness=0.18
+greedy (1 run)         r_paper=+0.43  r_paper_smooth=+0.73  roughness=0.23  ends=(0.04,0.05)
+sampled seed 0         r_paper=+0.51  r_paper_smooth=+0.66  roughness=0.22  ends=(0.20,0.31)
+sampled seed 1         r_paper=+0.26  r_paper_smooth=+0.45  roughness=0.20  ends=(0.47,0.50)
+sampled seed 2         r_paper=+0.28  r_paper_smooth=+0.55  roughness=0.25  ends=(0.29,0.17)
+sampled seed 3         r_paper=+0.40  r_paper_smooth=+0.71  roughness=0.27  ends=(0.08,0.08)
+sampled seed 4         r_paper=+0.28  r_paper_smooth=+0.56  roughness=0.25  ends=(0.27,0.12)
+sampled, 5-run average r_paper=+0.35  r_paper_smooth=+0.62  roughness=0.24  ends=(0.28,0.24)
+run-to-run profile agreement (sampled): r mean=0.75 range 0.56..0.94
+greedy vs 5-run sampled average: r=0.88
