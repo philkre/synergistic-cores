@@ -16,23 +16,14 @@ Runs locally on an M1 Pro (16 GB, bf16 on MPS). Code in `src/syncore/`, 35 tests
 
 ## Results so far
 
-| Synergy vs redundancy between heads (Gemma-3-4B-it) | Synergy–redundancy rank per head |
-|---|---|
-| ![](results/figures/fig2a_gemma.png) | ![](results/figures/fig2b_gemma.png) |
+| Synergy vs redundancy between heads (Gemma-3-4B-it) | Synergy–redundancy rank per head     |
+| --------------------------------------------------- | ------------------------------------ |
+| ![](results/figures/fig2a_gemma.png)                | ![](results/figures/fig2b_gemma.png) |
 
 ![Layer profiles](results/figures/fig2c_profiles.png)
 
-- **Gemma-3-4B-it** reproduces the broad inverted U: low early layers, a synergistic middle, low late layers.
-  It matches the paper's curve when smoothed (r ≈ 0.7) but not layer by layer (r ≈ 0.4).
-- **Noise:** synergy and redundancy correlate at r ≈ 0.8 across heads, so their rank difference is a noisy
-  residual. Two halves of the prompts agree at r ≈ 0.75.
-- **Ruled out** as causes of the gap: per-layer averaging, pooled vs per-prompt ΦID, greedy vs sampled decoding,
-  rank-then-average.
-- **Random-init** Gemma lacks the late-layer redundancy, so that part of the structure is learned.
-
 ## In progress
 
-- Plain-prompt (no chat template) runs for Gemma-3-4B-it and Qwen3-4B-Base. Base models degenerate under a chat template.
 - Step 2: ablating synergistic vs redundant heads (behaviour divergence, MATH accuracy).
 
 ## Running

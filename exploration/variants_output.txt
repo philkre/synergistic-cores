@@ -1,0 +1,18 @@
+gemma  base       midMinusEnds=+0.22  corr(syn,red)=+0.85  ends=(0.04,0.05)  r_paper=+0.43  r_paper_smooth=+0.73
+gemma  rankfirst  midMinusEnds=+0.19  corr(syn,red)=+0.85  ends=(0.21,0.13)  r_paper=+0.44  r_paper_smooth=+0.57
+/Users/philippkreiter/Documents/60_amsterdam/000_thesis/synergistic-cores/.venv/lib/python3.13/site-packages/phyid/measures.py:52: RuntimeWarning: divide by zero encountered in log2
+  entropy_dict = {comb: -np.log2(p_) for comb, p_ in zip(combs, p)}
+/Users/philippkreiter/Documents/60_amsterdam/000_thesis/synergistic-cores/.venv/lib/python3.13/site-packages/phyid/measures.py:52: RuntimeWarning: divide by zero encountered in log2
+  entropy_dict = {comb: -np.log2(p_) for comb, p_ in zip(combs, p)}
+/Users/philippkreiter/Documents/60_amsterdam/000_thesis/synergistic-cores/.venv/lib/python3.13/site-packages/phyid/measures.py:52: RuntimeWarning: divide by zero encountered in log2
+  entropy_dict = {comb: -np.log2(p_) for comb, p_ in zip(combs, p)}
+/Users/philippkreiter/Documents/60_amsterdam/000_thesis/synergistic-cores/.venv/lib/python3.13/site-packages/phyid/measures.py:52: RuntimeWarning: divide by zero encountered in log2
+  entropy_dict = {comb: -np.log2(p_) for comb, p_ in zip(combs, p)}
+/Users/philippkreiter/Documents/60_amsterdam/000_thesis/synergistic-cores/.venv/lib/python3.13/site-packages/phyid/measures.py:52: RuntimeWarning: divide by zero encountered in log2
+  entropy_dict = {comb: -np.log2(p_) for comb, p_ in zip(combs, p)}
+/Users/philippkreiter/Documents/60_amsterdam/000_thesis/synergistic-cores/.venv/lib/python3.13/site-packages/phyid/measures.py:52: RuntimeWarning: divide by zero encountered in log2
+  entropy_dict = {comb: -np.log2(p_) for comb, p_ in zip(combs, p)}
+/Users/philippkreiter/Documents/60_amsterdam/000_thesis/synergistic-cores/.venv/lib/python3.13/site-packages/phyid/measures.py:52: RuntimeWarning: divide by zero encountered in log2
+  entropy_dict = {comb: -np.log2(p_) for comb, p_ in zip(combs, p)}
+/Users/philippkreiter/Documents/60_amsterdam/000_thesis/synergistic-cores/.venv/lib/python3.13/site-packages/phyid/measures.py:52: RuntimeWarning: divide by zero encountered in log2
+  entropy_dict = {comb: -np.log2(p_) for comb, p_ in zip(combs, p)}
