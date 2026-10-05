@@ -1,0 +1,18 @@
+skew of norms (median over series): 0.89
+gemma
+  gaussian  midMinusEnds=+0.22  rho_vs_discrete=+0.83  ends=(0.04,0.05)  r_paper=+0.43 smooth=+0.73
+  discrete  midMinusEnds=+0.23  rho_vs_discrete=+1.00  ends=(0.20,0.33)  r_paper=+0.59 smooth=+0.87
+  copula    midMinusEnds=+0.18  rho_vs_discrete=+0.84  ends=(0.22,0.28)  r_paper=+0.52 smooth=+0.78
+  log       midMinusEnds=+0.20  rho_vs_discrete=+0.86  ends=(0.15,0.22)  r_paper=+0.52 smooth=+0.79
+
+gemma_nochat
+  gaussian  midMinusEnds=+0.22  rho_vs_discrete=+0.78  ends=(0.00,0.25)  r_paper=+0.46 smooth=+0.60
+  discrete  midMinusEnds=+0.28  rho_vs_discrete=+1.00  ends=(0.00,0.38)  r_paper=+0.65 smooth=+0.84
+  copula    midMinusEnds=+0.23  rho_vs_discrete=+0.76  ends=(0.00,0.41)  r_paper=+0.64 smooth=+0.82
+  log       midMinusEnds=+0.20  rho_vs_discrete=+0.81  ends=(0.00,0.32)  r_paper=+0.58 smooth=+0.76
+
+qwen3base
+  gaussian  midMinusEnds=+0.03  rho_vs_discrete=+0.75  ends=(0.63,0.18)
+  discrete  midMinusEnds=+0.23  rho_vs_discrete=+1.00  ends=(0.90,0.35)
+  copula    midMinusEnds=+0.27  rho_vs_discrete=+0.87  ends=(0.64,0.26)
+  log       midMinusEnds=+0.22  rho_vs_discrete=+0.86  ends=(0.67,0.28)
