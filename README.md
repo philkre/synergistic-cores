@@ -19,15 +19,23 @@ Runs locally on an M1 Pro (16 GB, bf16 on MPS). Code in `src/syncore/`, 35 tests
 Middle layer of the network show synergistic cores per synergy-redundancy rank.
 ![Layer profiles](results/figures/fig2c_profiles.png)
 
-We compute each layer for N heads with activation $a_h(t) = \lVert \mathrm{softmax}(q_t K^\top/\sqrt{d})\,V \rVert_2$ over 100 generated tokens:
+We compute each layer for N heads with activation $a_h(t) = \lVert \mathrm{softmax}(q_t K^\top/\sqrt{d}) V \rVert_2$ over 100 generated tokens:
 
-$$b_h(t) = \mathbb{1}\left[a_h(t) > \bar a_h\right] \qquad \text{(binarise each series at its mean)}$$
+```math
+b_h(t) = \mathbb{1}\left[a_h(t) > \bar a_h\right] \qquad \text{(binarise each series at its mean)}
+```
 
-$$\mathrm{syn}_{ij} = \big\langle \Phi\mathrm{ID}_{\mathrm{Syn}\to\mathrm{Syn}}(b_i, b_j) \big\rangle_{t,\ \mathrm{prompts}}, \qquad \mathrm{red}_{ij} = \big\langle \Phi\mathrm{ID}_{\mathrm{Red}\to\mathrm{Red}}(b_i, b_j) \big\rangle_{t,\ \mathrm{prompts}}$$
+```math
+\mathrm{syn}_{ij} = \big\langle \Phi\mathrm{ID}_{\mathrm{Syn}\to\mathrm{Syn}}(b_i, b_j) \big\rangle_{t,\ \mathrm{prompts}}, \qquad \mathrm{red}_{ij} = \big\langle \Phi\mathrm{ID}_{\mathrm{Red}\to\mathrm{Red}}(b_i, b_j) \big\rangle_{t,\ \mathrm{prompts}}
+```
 
-$$S_h = \frac{1}{N-1}\sum_{j \neq h} \mathrm{syn}_{hj}, \qquad R_h = \frac{1}{N-1}\sum_{j \neq h} \mathrm{red}_{hj}, \qquad r_h = \mathrm{rank}\big(\mathrm{rank}(S_h) - \mathrm{rank}(R_h)\big)$$
+```math
+S_h = \frac{1}{N-1}\sum_{j \neq h} \mathrm{syn}_{hj}, \qquad R_h = \frac{1}{N-1}\sum_{j \neq h} \mathrm{red}_{hj}, \qquad r_h = \mathrm{rank}\big(\mathrm{rank}(S_h) - \mathrm{rank}(R_h)\big)
+```
 
-$$P_\ell = \frac{1}{|\ell|}\sum_{h \in \ell} r_h, \qquad \text{plotted: } \frac{P_\ell - \min_\ell P_\ell}{\max_\ell P_\ell - \min_\ell P_\ell}$$
+```math
+P_\ell = \frac{1}{|\ell|}\sum_{h \in \ell} r_h, \qquad \text{plotted: } \frac{P_\ell - \min_\ell P_\ell}{\max_\ell P_\ell - \min_\ell P_\ell}
+```
 
 ΦID uses MMI redundancy with a lag of one token. High values mean a layer's heads are predominantly synergistic, low values predominantly redundant.
 
@@ -43,7 +51,9 @@ Middle transformer layers are visible in the heatmaps.
 
 Heads are switched off (attention output set to zero) cumulatively in three orders: most synergistic first, most redundant first, or random (5 orders, mean ± sd). Behaviour divergence is the KL divergence between the intact and ablated model's next-token distributions, teacher-forced on the intact model's 100-token responses and averaged over tokens and the 60 prompts:
 
-$$D = \Big\langle \mathrm{KL}\big(p_{\text{intact}}(\cdot \mid x_{<t}) \,\big\Vert\, p_{\text{ablated}}(\cdot \mid x_{<t})\big) \Big\rangle_{t,\ \mathrm{prompts}}$$
+```math
+D = \Big\langle \mathrm{KL}\big(p_{\text{intact}}(\cdot \mid x_{\lt t})  \big\Vert  p_{\text{ablated}}(\cdot \mid x_{\lt t})\big) \Big\rangle_{t,\ \mathrm{prompts}}
+```
 
 In both models, removing synergistic heads first is far more disruptive than removing random heads. With 30% of heads removed it is 2.6× random for Gemma (4.84 vs 1.84 ± 0.14) and 5.2× for Qwen (4.35 vs 0.84 ± 0.11). Removing redundant heads first tracks or stays below random.
 
