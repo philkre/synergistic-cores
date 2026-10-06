@@ -24,7 +24,7 @@ rank = np.load(run / "rank.npy")
 tokens = np.load(run / "tokens.npy")
 N = len(rank)
 fractions = np.round(np.arange(0, 0.401, 0.025), 3).tolist()
-orders = {"synergistic": np.argsort(-rank).tolist()}
+orders = {"synergistic": np.argsort(-rank).tolist(), "redundant": np.argsort(rank).tolist()}
 for s in range(5):
     orders[f"random{s}"] = np.random.default_rng(s).permutation(N).tolist()
 
@@ -36,5 +36,5 @@ json.dump({"fractions": fractions, "curves": curves}, open(run / "divergence.jso
 rand = np.array([curves[f"random{s}"] for s in range(5)])
 plots.fig4a(np.array(fractions), np.array(curves["synergistic"]), rand, Path("results/figures/fig4a_gemma.png"))
 print(f"done in {(time.time() - t0) / 60:.1f} min")
-for f, sv, rm, rs in zip(fractions, curves["synergistic"], rand.mean(0), rand.std(0)):
-    print(f"  f={f:.3f}  syn={sv:.3f}  rand={rm:.3f}±{rs:.3f}")
+for f, sv, rv, rm, rs in zip(fractions, curves["synergistic"], curves["redundant"], rand.mean(0), rand.std(0)):
+    print(f"  f={f:.3f}  syn={sv:.3f}  red={rv:.3f}  rand={rm:.3f}±{rs:.3f}")
