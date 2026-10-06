@@ -90,16 +90,19 @@ def fig2c(runs: dict, path):
     _save(fig, path)
 
 
-def fig4a(fractions, syn_curve, random_curves, path):
-    """syn_curve: (F,), random_curves: (n_orders, F). Mean ± std band for random."""
+def fig4a(fractions, syn_curve, random_curves, path, red_curve=None):
+    """syn_curve, red_curve: (F,); random_curves: (n_orders, F) shown as mean ± sd band.
+    Colours match the head maps: red = synergistic, blue = redundant, grey = random."""
     mu, sd = random_curves.mean(0), random_curves.std(0)
-    fig, ax = plt.subplots(figsize=(6, 3.8))
-    ax.plot(fractions, syn_curve, color=SERIES[1], label="Synergistic order")
-    ax.plot(fractions, mu, color=SERIES[0], linestyle="--", label="Random order (mean ± sd)")
-    ax.fill_between(fractions, mu - sd, mu + sd, color=SERIES[0], alpha=0.2, linewidth=0)
+    fig, ax = plt.subplots(figsize=(6.5, 4))
+    ax.fill_between(fractions, mu - sd, mu + sd, color=MUTED, alpha=0.25, linewidth=0)
+    ax.plot(fractions, mu, color=MUTED, linestyle="--", label=f"Random order (mean ± sd, n={len(random_curves)})")
+    if red_curve is not None:
+        ax.plot(fractions, red_curve, color="#2a78d6", marker="o", markersize=3, label="Redundant heads first")
+    ax.plot(fractions, syn_curve, color="#e34948", marker="o", markersize=3, label="Synergistic heads first")
     ax.set_xlabel("Fraction of heads deactivated")
     ax.set_ylabel("Behaviour divergence (KL)")
-    ax.legend(frameon=False)
+    ax.legend(frameon=False, fontsize=8, loc="lower left", bbox_to_anchor=(0, 1.02), ncol=2)
     _save(fig, path)
 
 

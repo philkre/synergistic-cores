@@ -34,7 +34,8 @@ curves = divergence_curve(model, tok, meta["prompts"], tokens, orders, fractions
                           chat=meta.get("chat", True))
 json.dump({"fractions": fractions, "curves": curves}, open(run / "divergence.json", "w"), indent=1)
 rand = np.array([curves[f"random{s}"] for s in range(5)])
-plots.fig4a(np.array(fractions), np.array(curves["synergistic"]), rand, Path("results/figures/fig4a_gemma.png"))
+plots.fig4a(np.array(fractions), np.array(curves["synergistic"]), rand, Path(f"results/figures/fig4a_{run.name}.png"),
+            red_curve=np.array(curves["redundant"]))
 print(f"done in {(time.time() - t0) / 60:.1f} min")
 for f, sv, rv, rm, rs in zip(fractions, curves["synergistic"], curves["redundant"], rand.mean(0), rand.std(0)):
     print(f"  f={f:.3f}  syn={sv:.3f}  red={rv:.3f}  rand={rm:.3f}±{rs:.3f}")
