@@ -11,41 +11,50 @@ from pathlib import Path
 import numpy as np
 
 from syncore import plots
-from syncore.ablate import noise_heads
-from syncore.math_eval import evaluate, load_subset
-from syncore.model import head_geometry, load
+from syncore.math_eval import load_subset
+from syncore.math_mlx import evaluate_mlx, noise_heads_mlx
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--run", required=True)
 ap.add_argument("--calibrate", action="store_true")
 ap.add_argument("--alpha", type=float)
 ap.add_argument("--frac", type=float, default=0.25)
-ap.add_argument("--batch-size", type=int, default=10)
+ap.add_argument("--batch-size", type=int, default=20)
+ap.add_argument("--max-tokens", type=int, default=1024)
 args = ap.parse_args()
 
 run = Path(args.run)
 meta = json.load(open(run / "meta.json"))
 rank = np.load(run / "rank.npy")
+from mlx_lm import load  # MLX backend: ~2x faster than PyTorch/MPS, continuous batching
 model, tok = load(meta["model"])
-h = head_geometry(model)
-k = round(args.frac * h.n_total)
+n_heads, head_dim, n_total = meta["n_heads"], meta["head_dim"], meta["n_layers"] * meta["n_heads"]
+chat = meta.get("chat", True)
+k = round(args.frac * n_total)
 order = np.argsort(-rank)
 conds = {"Synergistic core": order[:k].tolist(), "Redundant core": order[-k:].tolist()}
 for s in range(3):
-    conds[f"Random{s}"] = np.random.default_rng(100 + s).choice(h.n_total, k, replace=False).tolist()
+    conds[f"Random{s}"] = np.random.default_rng(100 + s).choice(n_total, k, replace=False).tolist()
 
 
 def run_cond(problems, idx, alpha, seed=0):
+    kw = dict(max_tokens=args.max_tokens, batch_size=args.batch_size, chat=chat)
     if idx is None:
-        return evaluate(model, tok, problems, batch_size=args.batch_size)
-    with noise_heads(h, idx, alpha, seed=seed):
-        return evaluate(model, tok, problems, batch_size=args.batch_size)
+        return evaluate_mlx(model, tok, problems, **kw)
+    with noise_heads_mlx(model, idx, alpha, n_heads, head_dim, seed=seed):
+        return evaluate_mlx(model, tok, problems, **kw)
 
 
 t0 = time.time()
 if args.calibrate:
     probs = load_subset(per_level=10, seed=1)  # 50 problems, disjoint seed from eval set
-    res = {"baseline": run_cond(probs, None, 0)["accuracy"]}
+    base = run_cond(probs, None, 0)
+    lens = [len(tok.encode(o)) for o in base["outputs"]]
+    res = {"baseline": base["accuracy"], "max_tokens": args.max_tokens,
+           "answer_tokens": {"median": float(np.median(lens)), "p90": float(np.percentile(lens, 90)),
+                             "hit_cap": int(sum(l >= args.max_tokens - 1 for l in lens)),
+                             "no_boxed": int(sum("\\boxed{" not in o for o in base["outputs"]))}}
+    print(res, flush=True)
     for alpha in [0.5, 1.0, 2.0]:
         res[f"random_a{alpha}"] = run_cond(probs, conds["Random0"], alpha)["accuracy"]
         print(res, f"({(time.time() - t0) / 60:.0f} min)", flush=True)
