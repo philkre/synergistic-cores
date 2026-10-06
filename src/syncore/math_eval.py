@@ -9,12 +9,14 @@ from syncore.capture import generate
 SUFFIX = "\n\nPlease reason step by step, and put your final answer within \\boxed{}."
 
 
-def load_subset(per_level=30, seed=0) -> list[dict]:
+def load_subset(per_level=30, seed=0, exclude=()) -> list[dict]:
+    """Stratified sample from MATH-500; problems in `exclude` (e.g. the calibration set) are never drawn."""
     ds = load_dataset("HuggingFaceH4/MATH-500", split="test")
     rng = np.random.default_rng(seed)
+    skip = {p["problem"] for p in exclude}
     out = []
     for level in range(1, 6):
-        idx = [i for i, lv in enumerate(ds["level"]) if lv == level]
+        idx = [i for i, lv in enumerate(ds["level"]) if lv == level and ds[i]["problem"] not in skip]
         for i in sorted(rng.choice(idx, size=per_level, replace=False).tolist()):
             r = ds[i]
             out.append({"problem": r["problem"], "answer": r["answer"], "level": r["level"]})

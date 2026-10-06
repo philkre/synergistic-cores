@@ -1,0 +1,11 @@
+{
+ "baseline": {
+  "accuracy": 0.74,
+  "max_tokens": 2048,
+  "median_tokens": 551.5,
+  "p90_tokens": 1205.8,
+  "hit_cap": 2,
+  "no_boxed": 2
+ },
+ "random_a0.5": 0.72
+}

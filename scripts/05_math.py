@@ -49,23 +49,38 @@ def run_cond(problems, idx, alpha, seed=0):
 
 
 t0 = time.time()
+calib_probs = load_subset(per_level=10, seed=1)  # 50 problems; excluded from the eval set below
+
+
+def step(name, store, path, fn):
+    """Run fn() unless `name` is already stored (resume after a crash); save after every step."""
+    if name not in store:
+        store[name] = fn()
+        json.dump(store, open(path, "w"), indent=1)
+        mx.clear_cache()
+        print(name, store[name] if not isinstance(store[name], dict) else store[name].get("accuracy"),
+              f"({(time.time() - t0) / 60:.0f} min)", flush=True)
+    return store[name]
+
+
 if args.calibrate:
-    probs = load_subset(per_level=10, seed=1)  # 50 problems, disjoint seed from eval set
-    base = run_cond(probs, None, 0)
-    lens = [len(tok.encode(o)) for o in base["outputs"]]
-    res = {"baseline": base["accuracy"], "max_tokens": args.max_tokens,
-           "answer_tokens": {"median": float(np.median(lens)), "p90": float(np.percentile(lens, 90)),
-                             "hit_cap": int(sum(l >= args.max_tokens - 1 for l in lens)),
-                             "no_boxed": int(sum("\\boxed{" not in o for o in base["outputs"]))}}
-    print(res, flush=True)
+    path = run / "math_calibration.json"
+    res = json.load(open(path)) if path.exists() else {}
+
+    def baseline():
+        base = run_cond(calib_probs, None, 0)
+        lens = [len(tok.encode(o)) for o in base["outputs"]]
+        return {"accuracy": base["accuracy"], "max_tokens": args.max_tokens,
+                "median_tokens": float(np.median(lens)), "p90_tokens": float(np.percentile(lens, 90)),
+                "hit_cap": int(sum(l >= args.max_tokens - 1 for l in lens)),
+                "no_boxed": int(sum("\\boxed{" not in o for o in base["outputs"]))}
+    step("baseline", res, path, baseline)
     for alpha in [0.5, 1.0, 2.0]:
-        res[f"random_a{alpha}"] = run_cond(probs, conds["Random0"], alpha)["accuracy"]
-        print(res, f"({(time.time() - t0) / 60:.0f} min)", flush=True)
-    json.dump(res, open(run / "math_calibration.json", "w"), indent=1)
+        step(f"random_a{alpha}", res, path, lambda a=alpha: run_cond(calib_probs, conds["Random0"], a)["accuracy"])
     raise SystemExit
 
 assert args.alpha is not None, "pass --alpha (from calibration) or --calibrate"
-probs = load_subset(per_level=30, seed=0)
+probs = load_subset(per_level=30, seed=0, exclude=calib_probs)
 results = {"alpha": args.alpha, "baseline": run_cond(probs, None, 0)}
 print(f"baseline {results['baseline']['accuracy']:.3f}", flush=True)
 for name, idx in conds.items():

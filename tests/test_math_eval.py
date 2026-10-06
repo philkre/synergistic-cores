@@ -35,3 +35,10 @@ def test_evaluate_runs_on_tiny(tiny):
     probs = [{"problem": "What is 1+1?", "answer": "2", "level": 1}]
     res = evaluate(model, tok, probs, max_new_tokens=5, batch_size=1)
     assert set(res) == {"accuracy", "correct", "outputs"} and 0.0 <= res["accuracy"] <= 1.0
+
+
+def test_load_subset_exclude_makes_disjoint():
+    calib = load_subset(per_level=10, seed=1)
+    ev = load_subset(per_level=30, seed=0, exclude=calib)
+    assert len(ev) == 150
+    assert not {p["problem"] for p in calib} & {p["problem"] for p in ev}
