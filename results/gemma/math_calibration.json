@@ -7,5 +7,6 @@
   "hit_cap": 2,
   "no_boxed": 2
  },
- "random_a0.5": 0.72
+ "random_a0.5": 0.72,
+ "random_a1.0": 0.26
 }
