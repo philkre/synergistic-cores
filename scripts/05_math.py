@@ -19,14 +19,17 @@ ap.add_argument("--run", required=True)
 ap.add_argument("--calibrate", action="store_true")
 ap.add_argument("--alpha", type=float)
 ap.add_argument("--frac", type=float, default=0.25)
-ap.add_argument("--batch-size", type=int, default=20)
+ap.add_argument("--batch-size", type=int, default=10, help="concurrent sequences; KV cache grows with max-tokens")
 ap.add_argument("--max-tokens", type=int, default=1024)
 args = ap.parse_args()
 
 run = Path(args.run)
 meta = json.load(open(run / "meta.json"))
 rank = np.load(run / "rank.npy")
+import mlx.core as mx
 from mlx_lm import load  # MLX backend: ~2x faster than PyTorch/MPS, continuous batching
+
+mx.set_cache_limit(1 << 30)  # don't let MLX hoard freed buffers (16 GB machine)
 model, tok = load(meta["model"])
 n_heads, head_dim, n_total = meta["n_heads"], meta["head_dim"], meta["n_layers"] * meta["n_heads"]
 chat = meta.get("chat", True)
