@@ -106,6 +106,29 @@ def fig4a(fractions, syn_curve, random_curves, path, red_curve=None):
     _save(fig, path)
 
 
+def fig4a_combined(fractions, models: dict, path):
+    """Paper-style Fig 4a: one axes, one colour per model; solid = synergistic heads first, dotted = redundant
+    heads first, dashed + band = random order (mean ± sd). models: name -> dict(syn, red=(F,), rand=(n_orders, F))."""
+    from matplotlib.lines import Line2D
+    fig, ax = plt.subplots(figsize=(6.5, 4))
+    for color, (name, m) in zip(SERIES, models.items()):
+        mu, sd = m["rand"].mean(0), m["rand"].std(0)
+        ax.fill_between(fractions, mu - sd, mu + sd, color=color, alpha=0.15, linewidth=0)
+        ax.plot(fractions, mu, color=color, linestyle="--")
+        if "red" in m:
+            ax.plot(fractions, m["red"], color=color, linestyle=":", marker="s", markersize=2.5)
+        ax.plot(fractions, m["syn"], color=color, marker="o", markersize=3, label=name)
+    style = [Line2D([], [], color=INK, marker="o", markersize=3, label="Synergistic heads first"),
+             Line2D([], [], color=INK, linestyle=":", marker="s", markersize=2.5, label="Redundant heads first"),
+             Line2D([], [], color=INK, linestyle="--", label="Random order (mean ± sd)")]
+    handles, _ = ax.get_legend_handles_labels()
+    ax.legend(handles=handles + [Line2D([], [], linestyle="none")] + style, frameon=False, fontsize=8,
+              loc="lower left", bbox_to_anchor=(0, 1.02), ncol=2)
+    ax.set_xlabel("Fraction of heads deactivated")
+    ax.set_ylabel("Behaviour divergence (KL)")
+    _save(fig, path)
+
+
 def fig4b(acc: dict, path):
     """acc: condition -> list of accuracies (one per seed). Bars = mean, whisker = sd, value labels on top."""
     names = list(acc)

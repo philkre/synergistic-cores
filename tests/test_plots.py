@@ -26,3 +26,10 @@ def test_fig2ab_combined_writes_file(tmp_path):
     S, R = rng.random((6, 6)), rng.random((6, 6))
     plots.fig2ab(S, R, rng.permutation(6).astype(float), n_layers=3, title="toy", path=tmp_path / "ab.png")
     assert (tmp_path / "ab.png").stat().st_size > 1000
+
+
+def test_fig4a_combined_writes_file(tmp_path):
+    fr = np.linspace(0, 0.4, 5)
+    m = dict(syn=np.linspace(0, 2, 5), red=np.linspace(0, 0.7, 5), rand=np.vstack([np.linspace(0, 1, 5)] * 3))
+    plots.fig4a_combined(fr, {"A": m, "B": m}, tmp_path / "p.png")
+    assert (tmp_path / "p.png").stat().st_size > 1000
