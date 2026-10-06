@@ -37,9 +37,19 @@ Middle transformer layers are visible in the heatmaps.
 ![Gemma-3-4B-it, plain prompt](results/figures/fig2ab_gemma_nochat.png)
 ![Qwen3-4B-Base, plain prompt](results/figures/fig2ab_qwen3base.png)
 
+### Ablating synergistic heads disrupts behaviour most
+
+![Behaviour divergence under head ablation](results/figures/fig4a.png)
+
+Heads are switched off (attention output set to zero) cumulatively in three orders: most synergistic first, most redundant first, or random (5 orders, mean ± sd). Behaviour divergence is the KL divergence between the intact and ablated model's next-token distributions, teacher-forced on the intact model's 100-token responses and averaged over tokens and the 60 prompts:
+
+$$D = \Big\langle \mathrm{KL}\big(p_{\text{intact}}(\cdot \mid x_{<t}) \,\big\Vert\, p_{\text{ablated}}(\cdot \mid x_{<t})\big) \Big\rangle_{t,\ \mathrm{prompts}}$$
+
+In both models, removing synergistic heads first is far more disruptive than removing random heads. With 30% of heads removed it is 2.6× random for Gemma (4.84 vs 1.84 ± 0.14) and 5.2× for Qwen (4.35 vs 0.84 ± 0.11). Removing redundant heads first tracks or stays below random.
+
 ## In progress
 
-- Step 2: ablating synergistic vs redundant heads (behaviour divergence, MATH accuracy).
+- Step 2b: MATH accuracy when adding noise to the top 25% synergistic vs redundant vs random heads (paper Fig 4b).
 
 ## Running
 
@@ -47,6 +57,8 @@ Middle transformer layers are visible in the heatmaps.
 PYTHONPATH=src uv run python scripts/01_capture.py --model google/gemma-3-4b-it --out results/gemma [--no-chat]
 PYTHONPATH=src uv run python scripts/02_phiid.py   --run results/gemma      # vectorised discrete ΦID, seconds
 PYTHONPATH=src uv run python scripts/03_plots_step1.py
+PYTHONPATH=src uv run python scripts/04_divergence.py --run results/gemma      # ablation, ~1 h per model
+PYTHONPATH=src uv run python scripts/06_plot_fig4a.py
 ```
 
 `PYTHONPATH=src` is needed because macOS hides the venv's `.pth` files and Python 3.13 skips hidden ones.
