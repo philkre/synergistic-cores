@@ -8,23 +8,32 @@ from syncore.model import head_geometry
 
 
 @torch.no_grad()
-def teacher_forced_logprobs(model, tok, prompts, gen, chat=True):
-    """gen: (B, T) clean generated ids. Returns float32 log-probs (B, T, V) predicting each gen token.
-    position_ids are derived from the attention mask so left padding matches generate()."""
+def teacher_forced_logits(model, tok, prompts, gen, chat=True):
+    """gen: (B, T) clean generated ids. Returns logits (B, T, V) on the model's device, in model dtype,
+    predicting each gen token. position_ids come from the attention mask so left padding matches generate()."""
     enc = encode(tok, prompts, model.device, chat)
     gen = gen.to(model.device)
     ids = torch.cat([enc["input_ids"], gen], 1)
     am = torch.cat([enc["attention_mask"], torch.ones_like(gen)], 1)
     pos = (am.cumsum(-1) - 1).clamp(min=0)
     T = gen.shape[1]
-    logits = model(input_ids=ids, attention_mask=am, position_ids=pos, logits_to_keep=T + 1).logits[:, :-1]
-    return torch.log_softmax(logits.float(), -1).cpu()
+    return model(input_ids=ids, attention_mask=am, position_ids=pos, logits_to_keep=T + 1).logits[:, :-1]
 
 
-def _kl(lp_clean, lp_abl):
-    """Mean over batch and tokens of sum_v p_c (log p_c − log p_a). Returns (sum, count) for pooling."""
-    kl = (lp_clean.exp() * (lp_clean - lp_abl)).sum(-1)  # (B, T)
-    return kl.sum().item(), kl.numel()
+def teacher_forced_logprobs(model, tok, prompts, gen, chat=True):
+    """float32 log-probs (B, T, V) on CPU. Convenience for inspection/tests; the curve stays on device."""
+    return torch.log_softmax(teacher_forced_logits(model, tok, prompts, gen, chat).float(), -1).cpu()
+
+
+def _kl_sum(lp_clean, logits_abl, chunk=16):
+    """Sum over batch and tokens of KL(p_clean || p_abl), computed on device in token chunks so no full-size
+    float32 temporaries are materialised. Returns (sum, count)."""
+    total = 0.0
+    for t in range(0, lp_clean.shape[1], chunk):
+        lc = lp_clean[:, t:t + chunk]
+        la = torch.log_softmax(logits_abl[:, t:t + chunk].float(), -1)
+        total += (lc.exp() * (lc - la)).sum().item()
+    return total, lp_clean.shape[0] * lp_clean.shape[1]
 
 
 def divergence_curve(model, tok, prompts, gen_tokens, orders: dict, fractions, batch_size=5, chat=True) -> dict:
@@ -36,13 +45,16 @@ def divergence_curve(model, tok, prompts, gen_tokens, orders: dict, fractions, b
     count = 0
     for i in range(0, len(prompts), batch_size):
         ps, g = prompts[i:i + batch_size], gen_tokens[i:i + batch_size]
-        clean = teacher_forced_logprobs(model, tok, ps, g, chat)
+        clean = torch.log_softmax(teacher_forced_logits(model, tok, ps, g, chat).float(), -1)  # on device
         n = 0
         for name, order in orders.items():
             for fi, f in enumerate(fractions):
                 with zero_heads(h, list(order)[: round(f * h.n_total)]):
-                    s, n = _kl(clean, teacher_forced_logprobs(model, tok, ps, g, chat))
+                    s, n = _kl_sum(clean, teacher_forced_logits(model, tok, ps, g, chat))
                 sums[name][fi] += s
         count += n
+        del clean
+        if torch.backends.mps.is_available():
+            torch.mps.empty_cache()
         print(f"  divergence batch {i // batch_size + 1}/{-(-len(prompts) // batch_size)}", flush=True)
     return {k: (v / count).tolist() for k, v in sums.items()}
