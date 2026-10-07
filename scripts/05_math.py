@@ -75,7 +75,7 @@ if args.calibrate:
                 "hit_cap": int(sum(l >= args.max_tokens - 1 for l in lens)),
                 "no_boxed": int(sum("\\boxed{" not in o for o in base["outputs"]))}
     step("baseline", res, path, baseline)
-    for alpha in [0.5, 0.75, 1.0]:
+    for alpha in [0.5, 0.6, 0.75, 1.0]:
         step(f"random_a{alpha}", res, path, lambda a=alpha: run_cond(calib_probs, conds["Random0"], a)["accuracy"])
     raise SystemExit
 
